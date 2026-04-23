@@ -1,7 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:tugas_android/pages/login_page.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  await Hive.openBox('users');
+  var box = Hive.box('users');
+
+if (box.isEmpty) {
+  box.put('guru_1', {
+    'nama': 'Pak Budi',
+    'nip': '123456',
+    'role': 'guru'
+  });
+
+  box.put('guru_2', {
+    'nama': 'Pak Heri',
+    'nip': '23456',
+    'role': 'guru'
+  });
+
+  box.put('siswa_1', {
+    'nama': 'Andi',
+    'nis': '654321',
+    'role': 'siswa'
+  });
+
+  box.put('siswa_2', {
+    'nama': 'Andika',
+    'nis': '23478',
+    'role': 'siswa'
+  });
+}
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -30,7 +65,7 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: LoginPage(),
     );
   }
 }
