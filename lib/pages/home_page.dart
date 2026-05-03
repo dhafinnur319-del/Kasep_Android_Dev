@@ -25,21 +25,18 @@ class _HomePageState extends State<HomePage> {
   
   late List<Widget> _pages;
   
+  // Warna
+  final Color primaryColor = const Color(0xFF007DF9);
+  final Color backgroundColor = const Color(0xFFF3F9FF);
+  
   @override
   void initState() {
     super.initState();
     
     _pages = [
-      // Halaman Beranda
       _buildHomeContent(),
-      
-      // Halaman Berita
       BeritaPage(),
-      
-      // Halaman Pengumuman
       PengumumanPage(role: widget.role),
-      
-      // Halaman Profile
       widget.role == 'guru' 
           ? GuruProfilePage(userId: widget.userId)
           : SiswaProfilePage(userId: widget.userId),
@@ -52,57 +49,96 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Welcome Card
+          // Profile Card dengan Foto
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF007DF9), Color(0xFF005BB5)],
+                colors: [primaryColor, primaryColor.withOpacity(0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  'Selamat Datang,',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                SizedBox(height: 5),
-                Text(
-                  widget.userName,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                // Foto Profile dengan CircleAvatar
+                _buildProfileAvatar(),
+                
+                SizedBox(width: 16),
+                
+                // Info User
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Selamat Datang,',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        widget.userName,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 4),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          widget.role == 'guru' ? 'Guru' : 'Siswa',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 10),
-                Text(
-                  widget.role == 'guru' 
-                      ? 'Kelola pembelajaran dengan mudah'
-                      : 'Semangat belajar!',
-                  style: TextStyle(color: Colors.white70),
-                ),
+                
+                // Icon tambahan
+                // Icon(
+                //   Icons.notifications_none,
+                //   color: Colors.white,
+                //   size: 28,
+                // ),
               ],
             ),
           ),
           
           SizedBox(height: 20),
           
-          // Menu Grid
+          // Banner Gambar
+          _buildBannerImage(),
+          
+          SizedBox(height: 20),
+          
+          // Menu Cepat
           Text(
             'Menu Cepat',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
+              color: const Color(0xFF1A1A1A),
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 12),
+          
           GridView.count(
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
@@ -151,10 +187,62 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
+          
+        
         ],
       ),
     );
   }
+  
+  Widget _buildProfileAvatar() {
+    // Gunakan foto berdasarkan role atau ambil dari storage
+    String avatarPath = widget.role == 'guru' 
+        ? 'assets/avatar/guru_default.png' 
+        : 'assets/avatar/siswa_default.png';
+    
+    // Coba gunakan NetworkImage jika ada URL foto, atau AssetImage
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: CircleAvatar(
+        radius: 35,
+        backgroundColor: Colors.white,
+        child: ClipOval(
+          child: Image.asset(
+            avatarPath,
+            width: 70,
+            height: 70,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              // Jika gambar tidak ditemukan, tampilkan icon
+              return Icon(
+                widget.role == 'guru' ? Icons.person : Icons.school,
+                size: 40,
+                color: primaryColor,
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildBannerImage() {
+  return AspectRatio(
+    aspectRatio: 412 / 194,  // Atau 1.586
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        image: DecorationImage(
+          image: AssetImage('assets/images/banner.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
+  );
+}
   
   Widget _buildMenuCard({
     required IconData icon,
@@ -180,14 +268,21 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: color),
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 28, color: color),
+            ),
             SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ],
@@ -231,8 +326,8 @@ class _HomePageState extends State<HomePage> {
             _selectedIndex = index;
           });
         },
-        selectedItemColor: Color(0xFF007DF9),
-        unselectedItemColor: Color(0xFF5F6368),
+        selectedItemColor: primaryColor,
+        unselectedItemColor: const Color(0xFF5F6368),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

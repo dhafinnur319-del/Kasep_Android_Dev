@@ -263,37 +263,17 @@ class _LoginPageState extends State<LoginPage> {
                             // Informasi Login
                             Container(
                               padding: EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: primaryColor.withOpacity(0.1)),
-                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.info_outline, size: 16, color: primaryColor),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        "Informasi Login",
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 12),
                                   Text(
                                     "✓ Login Siswa menggunakan NIS",
-                                    style: TextStyle(fontSize: 12, color: textPrimaryColor),
+                                    style: TextStyle(fontSize: 12, color: textSecondaryColor),
                                   ),
                                   SizedBox(height: 6),
                                   Text(
                                     "✓ Login Guru/Tendik Menggunakan NIP",
-                                    style: TextStyle(fontSize: 12, color: textPrimaryColor),
+                                    style: TextStyle(fontSize: 12, color: textSecondaryColor),
                                   ),
                                   SizedBox(height: 6),
                                   Text(
