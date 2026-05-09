@@ -1,28 +1,34 @@
 import 'package:flutter/material.dart';
 import '../services/hive_service.dart';
+import 'login_page.dart';
 
 class GuruProfilePage extends StatelessWidget {
-  final String userId; // Perbaiki: userId (bukan userID)
-  
+  final String userId;
+
   const GuruProfilePage({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
     final hiveService = HiveService();
     final user = hiveService.getUserById(userId);
-    
-    // Definisikan warna langsung di sini (karena tidak pakai AppConstants)
+
     final Color primaryColor = const Color(0xFF007DF9);
-    final Color backgroundColor = const Color(0xFFF3F9FF);
     final Color textPrimaryColor = const Color(0xFF1A1A1A);
     final Color textSecondaryColor = const Color(0xFF5F6368);
-    
+    final Color backgroundColor = const Color(0xFFF3F9FF);
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text('Profil Guru'),
+        title: const Text('Profil Guru'),
         backgroundColor: primaryColor,
-        foregroundColor: backgroundColor,
+        foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: user == null
           ? Center(
@@ -34,153 +40,267 @@ class GuruProfilePage extends StatelessWidget {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Header Profile
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(24),
-                        bottomRight: Radius.circular(24),
+                  // Avatar dengan border lingkaran (tanpa header biru)
+                  const SizedBox(height: 32),
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: primaryColor,
+                          width: 3.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 55,
+                        backgroundColor: Colors.white,
+                        child: const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Color(0xFF007DF9),
+                        ),
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Identitas guru
+                  Column(
+                    children: [
+                      Text(
+                        user['nama'] ?? 'Nama Guru',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: textPrimaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Guru ${user['mapel'] ?? 'Mata Pelajaran'}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: textSecondaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          'Guru Aktif',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                             color: primaryColor,
                           ),
                         ),
-                        SizedBox(height: 12),
-                        Text(
-                          user['nama'] ?? '-',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Card informasi detail
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Guru ${user['mapel'] ?? ''}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _buildInfoItem(
+                          icon: Icons.email_outlined,
+                          label: 'Email',
+                          value: user['email'] ?? 'guru@kasep.sch.id',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.badge_outlined,
+                          label: 'NIP',
+                          value: user['nip'] ?? '-',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.book_outlined,
+                          label: 'Mata Pelajaran',
+                          value: user['mapel'] ?? '-',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.phone_outlined,
+                          label: 'Telepon',
+                          value: user['noTelp'] ?? '-',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.wc_outlined,
+                          label: 'Gender',
+                          value: user['gender'] ?? 'Tidak diketahui',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.cake_outlined,
+                          label: 'Tanggal Lahir',
+                          value: user['tanggalLahir'] ?? '1 Januari 1980',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.location_on_outlined,
+                          label: 'Alamat',
+                          value: user['alamat'] ?? '-',
+                          primaryColor: primaryColor,
+                        ),
+                        const Divider(height: 1, indent: 16, endIndent: 16),
+                        _buildInfoItem(
+                          icon: Icons.lock_outline,
+                          label: 'Password',
+                          value: '********',
+                          primaryColor: primaryColor,
+                          isPassword: true,
                         ),
                       ],
                     ),
                   ),
                   
-                  // Informasi Detail
+                  const SizedBox(height: 32),
+                  
+                  // Tombol Logout
                   Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Informasi Pribadi',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: textPrimaryColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _showLogoutDialog(context),
+                        icon: const Icon(Icons.logout),
+                        label: const Text(
+                          'Logout',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        SizedBox(height: 16),
-                        
-                        _buildInfoCard(
-                          icon: Icons.badge,
-                          label: 'NIP',
-                          value: user['nip'] ?? '-',
-                          primaryColor: primaryColor,
-                        ),
-                        
-                        _buildInfoCard(
-                          icon: Icons.book,
-                          label: 'Mata Pelajaran',
-                          value: user['mapel'] ?? '-',
-                          primaryColor: primaryColor,
-                        ),
-                        
-                        _buildInfoCard(
-                          icon: Icons.phone,
-                          label: 'Nomor Telepon',
-                          value: user['noTelp'] ?? '-',
-                          primaryColor: primaryColor,
-                        ),
-                        
-                        _buildInfoCard(
-                          icon: Icons.location_on,
-                          label: 'Alamat',
-                          value: user['alamat'] ?? '-',
-                          primaryColor: primaryColor,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
     );
   }
-  
-  Widget _buildInfoCard({
+
+  Widget _buildInfoItem({
     required IconData icon,
     required String label,
     required String value,
     required Color primaryColor,
+    bool isPassword = false,
   }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade100,
-            blurRadius: 5,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: primaryColor),
+            child: Icon(icon, size: 22, color: primaryColor),
           ),
-          SizedBox(width: 16),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF5F6368),
+                    letterSpacing: 0.5,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   value,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.w500,
+                    color: isPassword ? Colors.grey.shade600 : const Color(0xFF1A1A1A),
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: Color(0xFF5F6368)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+              );
+            },
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.red),
             ),
           ),
         ],
