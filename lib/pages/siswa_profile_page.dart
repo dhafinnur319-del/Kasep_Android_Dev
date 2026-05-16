@@ -1,12 +1,35 @@
 import 'package:flutter/material.dart';
 import '../services/hive_service.dart';
 import 'login_page.dart';
-import 'download_page.dart';
+import 'home_page.dart';
 
 class SiswaProfilePage extends StatelessWidget {
   final String userId;
 
   const SiswaProfilePage({super.key, required this.userId});
+
+  void _backToHome(BuildContext context) {
+    // Ambil data user dari Hive
+    final hiveService = HiveService();
+    final user = hiveService.getUserById(userId);
+    
+    if (user != null) {
+      // Kembali ke HomePage dengan data user
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(
+            role: user['role'] ?? 'siswa',
+            userId: userId,
+            userName: user['nama'] ?? 'Siswa',
+          ),
+        ),
+      );
+    } else {
+      // Fallback: pop sampai ke halaman pertama
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +51,8 @@ class SiswaProfilePage extends StatelessWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => _backToHome(context),
+          tooltip: 'Kembali ke Menu Utama',
         ),
       ),
       body: user == null
@@ -42,8 +66,6 @@ class SiswaProfilePage extends StatelessWidget {
               child: Column(
                 children: [
                   const SizedBox(height: 32),
-                  
-                  // Avatar
                   Center(
                     child: Container(
                       decoration: BoxDecoration(
@@ -71,7 +93,6 @@ class SiswaProfilePage extends StatelessWidget {
                   
                   const SizedBox(height: 24),
                   
-                  // Nama dan info
                   Column(
                     children: [
                       Text(
@@ -111,7 +132,6 @@ class SiswaProfilePage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Informasi detail
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
@@ -175,7 +195,6 @@ class SiswaProfilePage extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Menu Download (card navigasi ke halaman download)
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
@@ -185,8 +204,11 @@ class SiswaProfilePage extends StatelessWidget {
                           title: 'Tugas',
                           subtitle: 'Download materi tugas',
                           color: Colors.orange,
-                          menuName: 'Tugas',
-                          onTap: () => _navigateToDownload(context, 'Tugas', Colors.orange),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fitur Tugas segera hadir')),
+                            );
+                          },
                         ),
                         const SizedBox(height: 12),
                         _buildMenuCard(
@@ -194,8 +216,11 @@ class SiswaProfilePage extends StatelessWidget {
                           title: 'E-Perpustakaan',
                           subtitle: 'Download buku digital',
                           color: Colors.green,
-                          menuName: 'E-Perpustakaan',
-                          onTap: () => _navigateToDownload(context, 'E-Perpustakaan', Colors.green),
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fitur E-Perpustakaan segera hadir')),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -203,7 +228,6 @@ class SiswaProfilePage extends StatelessWidget {
 
                   const SizedBox(height: 32),
 
-                  // Tombol Logout
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
@@ -236,7 +260,6 @@ class SiswaProfilePage extends StatelessWidget {
     required String title,
     required String subtitle,
     required Color color,
-    required String menuName,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -295,19 +318,6 @@ class SiswaProfilePage extends StatelessWidget {
               color: Color(0xFF9AA0A6),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToDownload(BuildContext context, String menuName, Color color) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DownloadPage(
-          title: menuName,
-          menuName: menuName,
-          color: color,
         ),
       ),
     );

@@ -259,32 +259,6 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             
                             SizedBox(height: 20),
-                            
-                            // Informasi Login
-                            Container(
-                              padding: EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "✓ Login Siswa menggunakan NIS",
-                                    style: TextStyle(fontSize: 12, color: textSecondaryColor),
-                                  ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "✓ Login Guru/Tendik Menggunakan NIP",
-                                    style: TextStyle(fontSize: 12, color: textSecondaryColor),
-                                  ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "✓ Contoh: NIS (2024001) / NIP (198512342023011001)",
-                                    style: TextStyle(fontSize: 12, color: textSecondaryColor),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            
-                            SizedBox(height: 10),
                           ],
                         ),
                       ),

@@ -35,7 +35,11 @@ class _HomePageState extends State<HomePage> {
     
     _pages = [
       _buildHomeContent(),
-      BeritaPage(),
+      BeritaPage(  // Kirim data user ke BeritaPage
+        role: widget.role,
+        userId: widget.userId,
+        userName: widget.userName,
+      ),
       PengumumanPage(role: widget.role),
       widget.role == 'guru' 
           ? GuruProfilePage(userId: widget.userId)
@@ -45,14 +49,14 @@ class _HomePageState extends State<HomePage> {
   
   Widget _buildHomeContent() {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Profile Card dengan Foto
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [primaryColor, primaryColor.withOpacity(0.8)],
@@ -66,24 +70,24 @@ class _HomePageState extends State<HomePage> {
                 // Foto Profile dengan CircleAvatar
                 _buildProfileAvatar(),
                 
-                SizedBox(width: 16),
+                const SizedBox(width: 16),
                 
                 // Info User
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Selamat Datang,',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 12,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         widget.userName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -91,16 +95,16 @@ class _HomePageState extends State<HomePage> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           widget.role == 'guru' ? 'Guru' : 'Siswa',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
@@ -110,38 +114,31 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                
-                // Icon tambahan
-                // Icon(
-                //   Icons.notifications_none,
-                //   color: Colors.white,
-                //   size: 28,
-                // ),
               ],
             ),
           ),
           
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           
           // Banner Gambar
           _buildBannerImage(),
           
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           
           // Menu Cepat
-          Text(
+          const Text(
             'Menu Cepat',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF1A1A1A),
+              color: Color(0xFF1A1A1A),
             ),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           
           GridView.count(
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
@@ -187,8 +184,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          
-        
         ],
       ),
     );
@@ -200,11 +195,10 @@ class _HomePageState extends State<HomePage> {
         ? 'assets/avatar/guru_default.png' 
         : 'assets/avatar/siswa_default.png';
     
-    // Coba gunakan NetworkImage jika ada URL foto, atau AssetImage
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
       ),
       child: CircleAvatar(
         radius: 35,
@@ -230,19 +224,19 @@ class _HomePageState extends State<HomePage> {
   }
   
   Widget _buildBannerImage() {
-  return AspectRatio(
-    aspectRatio: 412 / 194,  // Atau 1.586
-    child: Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: AssetImage('assets/images/banner.png'),
-          fit: BoxFit.cover,
+    return AspectRatio(
+      aspectRatio: 412 / 194,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          image: const DecorationImage(
+            image: AssetImage('assets/images/banner.png'),
+            fit: BoxFit.cover,
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
   
   Widget _buildMenuCard({
     required IconData icon,
@@ -261,7 +255,7 @@ class _HomePageState extends State<HomePage> {
             BoxShadow(
               color: Colors.grey.shade200,
               blurRadius: 10,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -269,20 +263,20 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 28, color: color),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A1A1A),
+                color: Color(0xFF1A1A1A),
               ),
             ),
           ],
@@ -295,19 +289,22 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Konfirmasi Logout'),
-        content: Text('Apakah Anda yakin ingin keluar?'),
+        title: const Text('Konfirmasi Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal'),
+            child: const Text('Batal'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pushReplacementNamed(context, '/login');
             },
-            child: Text('Logout', style: TextStyle(color: Colors.red)),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

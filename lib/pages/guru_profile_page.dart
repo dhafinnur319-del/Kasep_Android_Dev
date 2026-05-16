@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
 import '../services/hive_service.dart';
 import 'login_page.dart';
+import 'home_page.dart';
 
 class GuruProfilePage extends StatelessWidget {
   final String userId;
 
   const GuruProfilePage({super.key, required this.userId});
+
+  void _backToHome(BuildContext context) {
+    // Ambil data user dari Hive
+    final hiveService = HiveService();
+    final user = hiveService.getUserById(userId);
+    
+    if (user != null) {
+      // Kembali ke HomePage dengan data user
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(
+            role: user['role'] ?? 'guru',
+            userId: userId,
+            userName: user['nama'] ?? 'Guru',
+          ),
+        ),
+      );
+    } else {
+      // Fallback: pop sampai ke halaman pertama
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +51,8 @@ class GuruProfilePage extends StatelessWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => _backToHome(context),
+          tooltip: 'Kembali ke Menu Utama',
         ),
       ),
       body: user == null
@@ -40,16 +65,12 @@ class GuruProfilePage extends StatelessWidget {
           : SingleChildScrollView(
               child: Column(
                 children: [
-                  // Avatar dengan border lingkaran (tanpa header biru)
                   const SizedBox(height: 32),
                   Center(
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: primaryColor,
-                          width: 3.0,
-                        ),
+                        border: Border.all(color: primaryColor, width: 3.0),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.2),
@@ -72,7 +93,6 @@ class GuruProfilePage extends StatelessWidget {
                   
                   const SizedBox(height: 24),
                   
-                  // Identitas guru
                   Column(
                     children: [
                       Text(
@@ -93,10 +113,7 @@ class GuruProfilePage extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
                           color: primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -112,10 +129,9 @@ class GuruProfilePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
-                  // Card informasi detail
+
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
@@ -190,10 +206,43 @@ class GuruProfilePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
+                  const SizedBox(height: 24),
+
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        _buildMenuCard(
+                          icon: Icons.assignment,
+                          title: 'Tugas',
+                          subtitle: 'Download materi tugas',
+                          color: Colors.orange,
+                          onTap: () {
+                            // Navigasi ke halaman download Tugas
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fitur Tugas segera hadir')),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        _buildMenuCard(
+                          icon: Icons.library_books,
+                          title: 'E-Perpustakaan',
+                          subtitle: 'Download buku digital',
+                          color: Colors.green,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Fitur E-Perpustakaan segera hadir')),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const SizedBox(height: 32),
-                  
-                  // Tombol Logout
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
@@ -201,10 +250,7 @@ class GuruProfilePage extends StatelessWidget {
                       child: ElevatedButton.icon(
                         onPressed: () => _showLogoutDialog(context),
                         icon: const Icon(Icons.logout),
-                        label: const Text(
-                          'Logout',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        label: const Text('Logout', style: TextStyle(fontSize: 16)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red.shade400,
                           foregroundColor: Colors.white,
@@ -216,10 +262,79 @@ class GuruProfilePage extends StatelessWidget {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 40),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildMenuCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 28, color: color),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF5F6368),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Color(0xFF9AA0A6),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -278,16 +393,11 @@ class GuruProfilePage extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('Konfirmasi Logout'),
         content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Color(0xFF5F6368)),
-            ),
+            child: const Text('Batal', style: TextStyle(color: Color(0xFF5F6368))),
           ),
           TextButton(
             onPressed: () {
@@ -298,10 +408,7 @@ class GuruProfilePage extends StatelessWidget {
                 (route) => false,
               );
             },
-            child: const Text(
-              'Logout',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Logout', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

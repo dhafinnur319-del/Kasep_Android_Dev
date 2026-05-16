@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'detail_berita_page.dart';
+import 'home_page.dart';
 
 class BeritaPage extends StatefulWidget {
-  const BeritaPage({super.key});
+  final String? role;
+  final String? userId;
+  final String? userName;
+  
+  const BeritaPage({
+    super.key, 
+    this.role, 
+    this.userId, 
+    this.userName,
+  });
 
   @override
   State<BeritaPage> createState() => _BeritaPageState();
@@ -52,50 +63,41 @@ class _BeritaPageState extends State<BeritaPage> {
     await _loadBerita();
   }
   
-  String _formatTanggal(dynamic tanggalValue) {
-    if (tanggalValue == null) return '-';
-    
-    String tanggalStr = '';
-    
-    // Jika tanggalValue adalah String
-    if (tanggalValue is String) {
-      tanggalStr = tanggalValue;
-    }
-    // Jika tanggalValue adalah Map (misalnya berita object)
-    else if (tanggalValue is Map) {
-      // Prioritaskan field 'tanggal' manual
-      if (tanggalValue.containsKey('tanggal') && tanggalValue['tanggal'] != null) {
-        tanggalStr = tanggalValue['tanggal'].toString();
-      }
-      // Jika tidak ada, pakai 'createdAt' dari timestamps
-      else if (tanggalValue.containsKey('createdAt') && tanggalValue['createdAt'] != null) {
-        tanggalStr = tanggalValue['createdAt'].toString();
-      }
-      else {
-        return '-';
-      }
-    }
-    else {
-      return '-';
-    }
-    
-    // Parse tanggal
+  String _formatTanggal(dynamic tanggal) {
+    if (tanggal == null) return '-';
     try {
-      // Coba parse dengan format ISO
-      DateTime date = DateTime.parse(tanggalStr);
+      DateTime date = DateTime.parse(tanggal);
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
-      // Jika gagal, coba split string
-      try {
-        String cleanDate = tanggalStr.split('T')[0];
-        List<String> parts = cleanDate.split('-');
-        if (parts.length == 3) {
-          return '${parts[2]}/${parts[1]}/${parts[0]}';
-        }
-        return cleanDate;
-      } catch (e2) {
-        return tanggalStr;
-      }
+      return tanggal.toString().split('T')[0];
+    }
+  }
+  
+  void _navigateToDetail(Map<String, dynamic> berita) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailBeritaPage(berita: berita),
+      ),
+    );
+  }
+  
+  void _backToHome() {
+    if (widget.role != null && widget.userId != null) {
+      // Kembali ke HomePage dengan data yang ada
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(
+            role: widget.role!,
+            userId: widget.userId!,
+            userName: widget.userName ?? '',
+          ),
+        ),
+      );
+    } else {
+      // Fallback: pop sampai ke halaman pertama
+      Navigator.of(context).popUntil((route) => route.isFirst);
     }
   }
   
@@ -103,6 +105,11 @@ class _BeritaPageState extends State<BeritaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _backToHome,
+          tooltip: 'Kembali ke Menu Utama',
+        ),
         title: const Text('Berita'),
         backgroundColor: const Color(0xFF007DF9),
         foregroundColor: Colors.white,
@@ -113,14 +120,9 @@ class _BeritaPageState extends State<BeritaPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    color: Color(0xFF007DF9),
-                  ),
+                  CircularProgressIndicator(color: Color(0xFF007DF9)),
                   SizedBox(height: 16),
-                  Text(
-                    'Memuat berita...',
-                    style: TextStyle(color: Color(0xFF5F6368)),
-                  ),
+                  Text('Memuat berita...'),
                 ],
               ),
             )
@@ -129,19 +131,9 @@ class _BeritaPageState extends State<BeritaPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.newspaper,
-                        size: 64,
-                        color: Colors.grey.shade400,
-                      ),
+                      Icon(Icons.newspaper, size: 64, color: Colors.grey.shade400),
                       const SizedBox(height: 16),
-                      Text(
-                        _errorMessage.isEmpty ? 'Belum ada berita' : _errorMessage,
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Text(_errorMessage.isEmpty ? 'Belum ada berita' : _errorMessage),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         onPressed: _loadBerita,
@@ -170,20 +162,7 @@ class _BeritaPageState extends State<BeritaPage> {
   }
   
   Widget _buildBeritaCard(Map<String, dynamic> berita) {
-    // Gambar placeholder atau dari cloudinaryId
-    String imageUrl = berita['cloudinaryId'] != null 
-        ? 'https://res.cloudinary.com/your-cloud/image/upload/${berita['cloudinaryId']}'
-        : '';
-    
-    // Ambil tanggal (prioritaskan field 'tanggal' manual)
-    String tanggalDisplay = '';
-    if (berita['tanggal'] != null) {
-      tanggalDisplay = _formatTanggal(berita['tanggal']);
-    } else if (berita['createdAt'] != null) {
-      tanggalDisplay = _formatTanggal(berita['createdAt']);
-    } else {
-      tanggalDisplay = '-';
-    }
+    String imageUrl = berita['imageUrl'] ?? '';
     
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -192,26 +171,19 @@ class _BeritaPageState extends State<BeritaPage> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () {
-          _showBeritaDetail(context, berita);
-        },
+        onTap: () => _navigateToDetail(berita),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Kotak Gambar di Kiri
               _buildImageWidget(imageUrl),
-              
               const SizedBox(width: 12),
-              
-              // Konten di Kanan
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title
                     Text(
                       berita['title'] ?? 'No Title',
                       style: const TextStyle(
@@ -223,12 +195,12 @@ class _BeritaPageState extends State<BeritaPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
                     const SizedBox(height: 6),
-                    
-                    // Content (deskripsi singkat)
                     Text(
-                      berita['content'] ?? '',
+                      berita['summary'] ?? 
+                      (berita['content']?.length > 80 
+                          ? '${berita['content'].substring(0, 80)}...'
+                          : berita['content'] ?? ''),
                       style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF5F6368),
@@ -237,42 +209,25 @@ class _BeritaPageState extends State<BeritaPage> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
                     const SizedBox(height: 8),
-                    
-                    // Author & Date
                     Row(
                       children: [
-                        const Icon(
-                          Icons.person_outline,
-                          size: 12,
-                          color: Color(0xFF9AA0A6),
-                        ),
+                        const Icon(Icons.person_outline, size: 12, color: Color(0xFF9AA0A6)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            berita['createdBy'] ?? 'Unknown',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF9AA0A6),
-                            ),
+                            berita['createdBy']?.toString() ?? 'Admin',
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF9AA0A6)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(
-                          Icons.calendar_today,
-                          size: 12,
-                          color: Color(0xFF9AA0A6),
-                        ),
+                        const Icon(Icons.calendar_today, size: 12, color: Color(0xFF9AA0A6)),
                         const SizedBox(width: 4),
                         Text(
-                          tanggalDisplay,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF9AA0A6),
-                          ),
+                          _formatTanggal(berita['createdAt'] ?? berita['tanggal']),
+                          style: const TextStyle(fontSize: 11, color: Color(0xFF9AA0A6)),
                         ),
                       ],
                     ),
@@ -287,11 +242,9 @@ class _BeritaPageState extends State<BeritaPage> {
   }
   
   Widget _buildImageWidget(String imageUrl) {
-    // Ukuran kotak gambar
     const double imageSize = 80;
     
     if (imageUrl.isNotEmpty) {
-      // Jika ada gambar dari cloudinary
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.network(
@@ -329,7 +282,6 @@ class _BeritaPageState extends State<BeritaPage> {
         ),
       );
     } else {
-      // Placeholder jika tidak ada gambar
       return _buildPlaceholderImage(imageSize);
     }
   }
@@ -347,139 +299,6 @@ class _BeritaPageState extends State<BeritaPage> {
         Icons.image_outlined,
         size: 32,
         color: Color(0xFF007DF9),
-      ),
-    );
-  }
-  
-  void _showBeritaDetail(BuildContext context, Map<String, dynamic> berita) {
-    // Ambil tanggal untuk detail
-    String tanggalDisplay = '';
-    if (berita['tanggal'] != null) {
-      tanggalDisplay = _formatTanggal(berita['tanggal']);
-    } else if (berita['createdAt'] != null) {
-      tanggalDisplay = _formatTanggal(berita['createdAt']);
-    } else {
-      tanggalDisplay = '-';
-    }
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.9,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, scrollController) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-            ),
-            child: Column(
-              children: [
-                // Handle bar
-                Container(
-                  margin: const EdgeInsets.only(top: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Gambar besar jika ada
-                        if (berita['cloudinaryId'] != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              'https://res.cloudinary.com/your-cloud/image/upload/${berita['cloudinaryId']}',
-                              width: double.infinity,
-                              height: 200,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                            ),
-                          ),
-                        
-                        if (berita['cloudinaryId'] != null)
-                          const SizedBox(height: 16),
-                        
-                        // Title
-                        Text(
-                          berita['title'] ?? 'No Title',
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A1A1A),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 8),
-                        
-                        // Author & Date
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              berita['createdBy'] ?? 'Unknown',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Icon(
-                              Icons.calendar_today,
-                              size: 14,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              tanggalDisplay,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                        
-                        const Divider(height: 24),
-                        
-                        // Content
-                        Text(
-                          berita['content'] ?? '',
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.5,
-                            color: Color(0xFF3C4043),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 32),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }
