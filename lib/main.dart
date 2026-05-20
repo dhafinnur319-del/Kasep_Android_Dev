@@ -26,9 +26,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/home': (context) => HomePage(
-          role: ModalRoute.of(context)!.settings.arguments as String? ?? '',
-          userId: '',
-          userName: '',
+          role: ModalRoute.of(context)!.settings.arguments as String? ?? 'siswa',
+          userId: '98765432',
+          userName: 'sonion',
         ),
       },
       debugShowCheckedModeBanner: false,
